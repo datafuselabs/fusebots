@@ -1,0 +1,10 @@
+[github]
+# Github Token
+token = "can't tell"
+
+# Github Token
+secret = "can't tell"
+
+[repo]
+owner = "datafuselabs"
+name = "datafuse"

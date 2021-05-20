@@ -1,0 +1,19 @@
+
+### Go ###
+# Binaries for programs and plugins
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.ini
+fusebots
+
+### Go Patch ###
+/vendor/
+/Godeps/
+
+
+### IDE ###
+.idea/*
+
