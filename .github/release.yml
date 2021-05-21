@@ -1,0 +1,25 @@
+categories:
+  - title: 'Features'
+    labels:
+      - 'pr-feature'
+  - title: 'Bug Fixes'
+    labels:
+      - 'pr-bugfix'
+  - title: 'Improvement'
+    labels:
+      - 'pr-improvement'
+  - title: 'Performance Improvement'
+    labels:
+      - 'pr-performance'
+  - title: 'Build/Testing/CI'
+    labels:
+      - 'pr-build'
+  - title: 'Documentation'
+    labels:
+      - 'pr-doc-fix'
+  - title: 'Dependency Updates'
+    labels:
+      - 'dependencies'
+  - title: 'Others'
+    labels:
+      - 'pr-other'

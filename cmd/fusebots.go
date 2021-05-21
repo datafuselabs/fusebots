@@ -51,7 +51,10 @@ func main() {
 	os.Setenv("GITHUB_TOKEN", cfg.GithubToken)
 
 	// Actions.
-	labelAction := actions.NewLabeler(cfg.RepoOwner, cfg.RepoName)
+	labelAction := actions.NewLabelerAction(cfg)
+	labelAction.Start()
+	releaseAction := actions.NewReleaseAction(cfg)
+	releaseAction.Start()
 
 	hook, _ := github.New(github.Options.Secret(cfg.GithubSecret))
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
@@ -68,4 +71,6 @@ func main() {
 		}
 	})
 	http.ListenAndServe(":3000", nil)
+	labelAction.Stop()
+	releaseAction.Stop()
 }

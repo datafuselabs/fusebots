@@ -8,3 +8,6 @@ secret = "can't tell"
 [repo]
 owner = "datafuselabs"
 name = "datafuse"
+
+[schedule]
+nightly_release_cron = "@daily"

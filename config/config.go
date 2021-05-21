@@ -9,10 +9,11 @@ import (
 )
 
 type Config struct {
-	GithubToken  string
-	GithubSecret string
-	RepoOwner    string
-	RepoName     string
+	GithubToken      string
+	GithubSecret     string
+	RepoOwner        string
+	RepoName         string
+	NightReleaseCron string
 }
 
 func LoadConfig(file string) (*Config, error) {
@@ -26,5 +27,6 @@ func LoadConfig(file string) (*Config, error) {
 	cfg.GithubSecret = load.Section("github").Key("secret").String()
 	cfg.RepoOwner = load.Section("repo").Key("owner").String()
 	cfg.RepoName = load.Section("repo").Key("name").String()
+	cfg.NightReleaseCron = load.Section("schedule").Key("nightly_release_cron").String()
 	return cfg, nil
 }
