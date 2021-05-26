@@ -7,8 +7,13 @@
 
 
 ## What I Can
-* Auto label
-* Nightly release
+* Auto Label
+  - labeler.yml
+* Nightly Release
+  - release.yml
+* Auto Merge
+  - ALL CI passed
+  - one of Reviewers APPROVED
 
 ## Take me
 ```
