@@ -23,6 +23,7 @@ func NewLabelerAction(cfg *config.Config) *LabelerAction {
 }
 
 func (s *LabelerAction) Start() {
+	log.Infof("Labeler action start...")
 }
 
 func (s *LabelerAction) Stop() {

@@ -11,3 +11,4 @@ name = "datafuse"
 
 [schedule]
 nightly_release_cron = "@daily"
+merge_check_cron = "@every 10s"

@@ -50,7 +50,7 @@ func NewReleaseAction(cfg *config.Config) *ReleaseAction {
 }
 
 func (s *ReleaseAction) nightReleaseCron() {
-	if err := s.release("patch", true); err != nil {
+	if err := s.releaseHandle("patch", true); err != nil {
 		log.Errorf("build release log error:%+v", err)
 	}
 }
@@ -62,10 +62,61 @@ func (s *ReleaseAction) Start() {
 
 	s.cron.AddFunc(s.cfg.NightReleaseCron, s.nightReleaseCron)
 	s.cron.Start()
+	log.Infof("Release action start...")
 }
 
 func (s *ReleaseAction) Stop() {
 	s.cron.Stop()
+}
+
+func (s *ReleaseAction) releaseHandle(typ string, preRelease bool) error {
+	after, currentTag, err := s.getLastPublishedAndCurrentTag()
+	if err != nil {
+		return err
+	}
+	newTagName, err := common.DetermineNewTag(currentTag, typ)
+	if err != nil {
+		return err
+	}
+	log.Infof("Latest tag:%v, new tag:%v, type:%v", currentTag, newTagName, typ)
+
+	prs, err := s.getMergedPRsAfter(after)
+	if err != nil {
+		return err
+	}
+	if len(prs) > 0 {
+		var labelPr = make(map[string][]*github.PullRequest)
+		for _, pr := range prs {
+			for _, label := range pr.Labels {
+				title := s.yml.GetCategoryByLabel(label.GetName())
+				prs = labelPr[title]
+				if prs == nil {
+					prs = make([]*github.PullRequest, 0)
+				}
+				exists := false
+				for _, check := range prs {
+					if *check.Number == *pr.Number {
+						exists = true
+					}
+				}
+				if !exists {
+					prs = append(prs, pr)
+				}
+				labelPr[title] = prs
+			}
+		}
+		releaseBody, err := generateReleaseBody(labelPr)
+		if err != nil {
+			return err
+		}
+
+		log.Infof("prepare release: %v, %v", newTagName, releaseBody)
+		if _, err := s.createRelease(newTagName, releaseBody, preRelease); err != nil {
+			return err
+		}
+		log.Infof("release: %v done", newTagName)
+	}
+	return nil
 }
 
 func (s *ReleaseAction) getLatestRelease() (*github.RepositoryRelease, error) {
@@ -181,54 +232,4 @@ func (s *ReleaseAction) createRelease(tagName, body string, preRelease bool) (*g
 		return nil, fmt.Errorf("call creating release API: %w", err)
 	}
 	return release, nil
-}
-
-func (s *ReleaseAction) release(typ string, preRelease bool) error {
-	after, currentTag, err := s.getLastPublishedAndCurrentTag()
-	if err != nil {
-		return err
-	}
-	newTagName, err := common.DetermineNewTag(currentTag, typ)
-	if err != nil {
-		return err
-	}
-	log.Infof("Latest tag:%v, new tag:%v, type:%v", currentTag, newTagName, typ)
-
-	prs, err := s.getMergedPRsAfter(after)
-	if err != nil {
-		return err
-	}
-	if len(prs) > 0 {
-		var labelPr = make(map[string][]*github.PullRequest)
-		for _, pr := range prs {
-			for _, label := range pr.Labels {
-				title := s.yml.GetCategoryByLabel(label.GetName())
-				prs = labelPr[title]
-				if prs == nil {
-					prs = make([]*github.PullRequest, 0)
-				}
-				exists := false
-				for _, check := range prs {
-					if *check.Number == *pr.Number {
-						exists = true
-					}
-				}
-				if !exists {
-					prs = append(prs, pr)
-				}
-				labelPr[title] = prs
-			}
-		}
-		releaseBody, err := generateReleaseBody(labelPr)
-		if err != nil {
-			return err
-		}
-
-		log.Infof("prepare release: %v, %v", newTagName, releaseBody)
-		if _, err := s.createRelease(newTagName, releaseBody, preRelease); err != nil {
-			return err
-		}
-		log.Infof("release: %v done", newTagName)
-	}
-	return nil
 }

@@ -55,6 +55,8 @@ func main() {
 	labelAction.Start()
 	releaseAction := actions.NewReleaseAction(cfg)
 	releaseAction.Start()
+	autoMergeAction := actions.NewAutoMergeAction(cfg)
+	autoMergeAction.Start()
 
 	hook, _ := github.New(github.Options.Secret(cfg.GithubSecret))
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
@@ -73,4 +75,5 @@ func main() {
 	http.ListenAndServe(":3000", nil)
 	labelAction.Stop()
 	releaseAction.Stop()
+	autoMergeAction.Stop()
 }
