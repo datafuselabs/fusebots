@@ -86,11 +86,6 @@ func (s *AutoMergeAction) shouldMergePR(pr *github.PullRequest) (bool, error) {
 		}
 	}
 
-	reviewers, err := s.client.PullRequestListReviewers(pr.GetNumber())
-	if err != nil {
-		return false, err
-	}
-
 	reviews, err := s.client.PullRequestListReviews(pr.GetNumber())
 	if err != nil {
 		return false, err
@@ -99,12 +94,7 @@ func (s *AutoMergeAction) shouldMergePR(pr *github.PullRequest) (bool, error) {
 	for _, review := range reviews {
 		log.Infof("Review name:%v, status:%v", review.GetUser().GetLogin(), review.GetState())
 		if review.GetState() == "APPROVED" {
-			for _, user := range reviewers.Users {
-				if review.GetUser().GetID() == user.GetID() {
-					log.Infof("PR apprevoed by :%v", review.GetUser().GetName())
-					return true, nil
-				}
-			}
+			return true, nil
 		}
 	}
 	return false, nil
