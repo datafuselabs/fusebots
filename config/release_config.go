@@ -19,18 +19,18 @@ type Categories struct {
 	Categories []Category `yaml:"categories"`
 }
 
-type ReleaseYml struct {
+type ReleaseConfig struct {
 	file       string
 	Categories *Categories
 }
 
-func NewReleaseYML(file string) *ReleaseYml {
-	return &ReleaseYml{
+func NewReleaseConfig(file string) *ReleaseConfig {
+	return &ReleaseConfig{
 		file: file,
 	}
 }
 
-func (s *ReleaseYml) Load() error {
+func (s *ReleaseConfig) Load() error {
 	file, err := ioutil.ReadFile(s.file)
 	if err != nil {
 		return err
@@ -41,7 +41,7 @@ func (s *ReleaseYml) Load() error {
 	return nil
 }
 
-func (s *ReleaseYml) GetCategoryByLabel(label string) string {
+func (s *ReleaseConfig) GetCategoryByLabel(label string) string {
 	for _, category := range s.Categories.Categories {
 		for _, l := range category.Labels {
 			if l == label {

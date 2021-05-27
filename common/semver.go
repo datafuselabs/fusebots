@@ -14,7 +14,7 @@ import (
 
 const (
 	semVerPrefix = "v"
-	semVerSuffix= "-nightly"
+	semVerSuffix = "-nightly"
 )
 
 const (

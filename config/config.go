@@ -30,8 +30,8 @@ func LoadConfig(file string) (*Config, error) {
 	cfg.RepoName = load.Section("repo").Key("name").String()
 
 	cfg.NightReleaseCron = load.Section("schedule").Key("nightly_release_cron").String()
-	if cfg.NightReleaseCron== "" {
-		cfg.NightReleaseCron= "@daliy"
+	if cfg.NightReleaseCron == "" {
+		cfg.NightReleaseCron = "@daliy"
 	}
 	cfg.MergeCheckCron = load.Section("schedule").Key("merge_check_cron").String()
 	if cfg.MergeCheckCron == "" {

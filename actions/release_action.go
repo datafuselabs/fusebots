@@ -29,7 +29,7 @@ type ReleaseAction struct {
 	cfg    *config.Config
 	cron   *cron.Cron
 	client *github.Client
-	yml    *config.ReleaseYml
+	yml    *config.ReleaseConfig
 }
 
 func NewReleaseAction(cfg *config.Config) *ReleaseAction {
@@ -39,7 +39,7 @@ func NewReleaseAction(cfg *config.Config) *ReleaseAction {
 	})
 	tc := oauth2.NewClient(ctx, ts)
 	client := github.NewClient(tc)
-	yml := config.NewReleaseYML(".github/release.yml")
+	yml := config.NewReleaseConfig(".github/release.yml")
 
 	return &ReleaseAction{
 		cfg:    cfg,
