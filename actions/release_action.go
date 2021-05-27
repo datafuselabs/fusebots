@@ -9,7 +9,6 @@ import (
 	"bots/common"
 	"bots/config"
 	"bytes"
-	"context"
 	"fmt"
 	"text/template"
 	"time"
@@ -17,7 +16,6 @@ import (
 	"github.com/google/go-github/v35/github"
 	"github.com/robfig/cron/v3"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/oauth2"
 )
 
 const (
@@ -28,17 +26,12 @@ const (
 type ReleaseAction struct {
 	cfg    *config.Config
 	cron   *cron.Cron
-	client *github.Client
+	client *common.Client
 	yml    *config.ReleaseConfig
 }
 
 func NewReleaseAction(cfg *config.Config) *ReleaseAction {
-	ctx := context.Background()
-	ts := oauth2.StaticTokenSource(&oauth2.Token{
-		AccessToken: cfg.GithubToken,
-	})
-	tc := oauth2.NewClient(ctx, ts)
-	client := github.NewClient(tc)
+	client := common.NewClient(cfg)
 	yml := config.NewReleaseConfig(".github/release.yml")
 
 	return &ReleaseAction{
@@ -80,7 +73,7 @@ func (s *ReleaseAction) releaseHandle(typ string, preRelease bool) error {
 	}
 	log.Infof("Latest tag:%v, new tag:%v, type:%v", currentTag, newTagName, typ)
 
-	prs, err := s.getMergedPRsAfter(after)
+	prs, err := s.client.GetMergedPullRequestsAfter(baseBranch, after)
 	if err != nil {
 		return err
 	}
@@ -111,7 +104,7 @@ func (s *ReleaseAction) releaseHandle(typ string, preRelease bool) error {
 		}
 
 		log.Infof("prepare release: %v, %v", newTagName, releaseBody)
-		if _, err := s.createRelease(newTagName, releaseBody, preRelease); err != nil {
+		if _, err := s.client.CreateRelease(newTagName, releaseBody, preRelease); err != nil {
 			return err
 		}
 		log.Infof("release: %v done", newTagName)
@@ -119,22 +112,10 @@ func (s *ReleaseAction) releaseHandle(typ string, preRelease bool) error {
 	return nil
 }
 
-func (s *ReleaseAction) getLatestRelease() (*github.RepositoryRelease, error) {
-	ctx := context.Background()
-	releases, _, err := s.client.Repositories.ListReleases(ctx, s.cfg.RepoOwner, s.cfg.RepoName, &github.ListOptions{Page: 1, PerPage: 10})
-	if err != nil {
-		return nil, err
-	}
-	if len(releases) > 0 {
-		return releases[0], nil
-	}
-	return nil, nil
-}
-
 func (s *ReleaseAction) getLastPublishedAndCurrentTag() (time.Time, string, error) {
-	after := time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC)
 	tag := ""
-	release, err := s.getLatestRelease()
+	after := time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC)
+	release, err := s.client.GetLatestRelease()
 	if err != nil {
 		return after, "", fmt.Errorf("get latest release: %w", err)
 	}
@@ -145,53 +126,6 @@ func (s *ReleaseAction) getLastPublishedAndCurrentTag() (time.Time, string, erro
 	after = release.GetPublishedAt().Time
 	tag = release.GetTagName()
 	return after, tag, nil
-}
-
-func (s *ReleaseAction) getMergedPRsAfter(after time.Time) ([]*github.PullRequest, error) {
-	opt := &github.PullRequestListOptions{
-		State:       "closed",
-		Base:        baseBranch,
-		Sort:        "updated",
-		Direction:   "desc",
-		ListOptions: github.ListOptions{PerPage: listPerPage},
-	}
-
-	ctx := context.Background()
-	var prList []*github.PullRequest
-	for {
-		prs, resp, err := s.client.PullRequests.List(ctx, s.cfg.RepoOwner, s.cfg.RepoName, opt)
-		if err != nil {
-			return nil, fmt.Errorf("call listing pull requests API: %w", err)
-		}
-
-		extractedPR, done := extractMergedPRsAfter(prs, after)
-		prList = append(prList, extractedPR...)
-		if done {
-			break
-		}
-
-		if resp.NextPage == 0 {
-			break
-		}
-		opt.Page = resp.NextPage
-	}
-
-	return prList, nil
-}
-
-func extractMergedPRsAfter(prs []*github.PullRequest, after time.Time) ([]*github.PullRequest, bool) {
-	var prList []*github.PullRequest
-	done := false
-	for _, pr := range prs {
-		if pr.MergedAt != nil && pr.MergedAt.After(after) {
-			prList = append(prList, pr)
-		}
-		if pr.UpdatedAt != nil && !pr.UpdatedAt.After(after) {
-			done = true
-			break
-		}
-	}
-	return prList, done
 }
 
 func generateReleaseBody(prs map[string][]*github.PullRequest) (string, error) {
@@ -218,18 +152,4 @@ func generateReleaseBody(prs map[string][]*github.PullRequest) (string, error) {
 		return "", fmt.Errorf("template execute error: %w", err)
 	}
 	return buff.String(), nil
-}
-
-func (s *ReleaseAction) createRelease(tagName, body string, preRelease bool) (*github.RepositoryRelease, error) {
-	ctx := context.Background()
-	release, _, err := s.client.Repositories.CreateRelease(ctx, s.cfg.RepoOwner, s.cfg.RepoName, &github.RepositoryRelease{
-		TagName:    github.String(tagName),
-		Name:       github.String(tagName),
-		Body:       github.String(body),
-		Prerelease: &preRelease,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("call creating release API: %w", err)
-	}
-	return release, nil
 }

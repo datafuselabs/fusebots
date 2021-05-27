@@ -6,29 +6,22 @@
 package actions
 
 import (
+	"bots/common"
 	"bots/config"
-	"context"
-
+	"fmt"
 	"github.com/google/go-github/v35/github"
 	"github.com/robfig/cron/v3"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/oauth2"
 )
 
 type AutoMergeAction struct {
 	cfg    *config.Config
 	cron   *cron.Cron
-	client *github.Client
+	client *common.Client
 }
 
 func NewAutoMergeAction(cfg *config.Config) *AutoMergeAction {
-	ctx := context.Background()
-	ts := oauth2.StaticTokenSource(&oauth2.Token{
-		AccessToken: cfg.GithubToken,
-	})
-	tc := oauth2.NewClient(ctx, ts)
-	client := github.NewClient(tc)
-
+	client := common.NewClient(cfg)
 	return &AutoMergeAction{
 		cfg:    cfg,
 		cron:   cron.New(),
@@ -37,7 +30,7 @@ func NewAutoMergeAction(cfg *config.Config) *AutoMergeAction {
 }
 
 func (s *AutoMergeAction) autoMergeCron() {
-	prs, err := s.listOpenPullRequests()
+	prs, err := s.client.PullRequestList()
 	if err != nil {
 		log.Errorf("List open pull requests error:%v", err)
 	}
@@ -48,16 +41,13 @@ func (s *AutoMergeAction) autoMergeCron() {
 		}
 
 		if shouldMerge {
-			opts := github.PullRequestOptions{
-				MergeMethod: "merge",
-			}
+			comments := fmt.Sprintf("CI Passed\nReviewer Approved\nLet's Merge")
+			s.client.CreateComment(pr.GetNumber(), &comments)
 
-			ctx := context.Background()
-			result, _, err := s.client.PullRequests.Merge(ctx, s.cfg.RepoOwner, s.cfg.RepoName, pr.GetNumber(), "", &opts)
-			if err != nil {
+			if err := s.client.PullRequestMerge(pr.GetNumber(), ""); err != nil {
 				log.Errorf("Do merge error:%+v", err)
 			}
-			log.Infof("Merge %v, sha:%v succuess", pr.GetNumber(), result.GetSHA())
+			log.Infof("Merge %v succuess", pr.GetNumber())
 		}
 	}
 }
@@ -72,34 +62,6 @@ func (s *AutoMergeAction) Stop() {
 	s.cron.Stop()
 }
 
-func (s *AutoMergeAction) listOpenPullRequests() ([]*github.PullRequest, error) {
-	var results []*github.PullRequest
-
-	opts := &github.PullRequestListOptions{
-		State: "open",
-		ListOptions: github.ListOptions{
-			PerPage: 100,
-		},
-	}
-
-	ctx := context.Background()
-	for {
-		prs, resp, err := s.client.PullRequests.List(ctx, s.cfg.RepoOwner, s.cfg.RepoName, opts)
-		if err != nil {
-			return results, err
-		}
-		for _, pr := range prs {
-			results = append(results, pr)
-		}
-		if resp.NextPage == 0 {
-			break
-		}
-		opts.ListOptions.Page = resp.NextPage
-	}
-
-	return results, nil
-}
-
 func (s *AutoMergeAction) shouldMergePR(pr *github.PullRequest) (bool, error) {
 	allowedCheckConclusions := map[string]bool{
 		"success": true,
@@ -112,12 +74,11 @@ func (s *AutoMergeAction) shouldMergePR(pr *github.PullRequest) (bool, error) {
 		return false, nil
 	}
 
-	ctx := context.Background()
-	opts := &github.ListCheckRunsOptions{ListOptions: github.ListOptions{PerPage: 100}}
-	checkRuns, _, err := s.client.Checks.ListCheckRunsForRef(ctx, s.cfg.RepoOwner, s.cfg.RepoName, pr.GetHead().GetSHA(), opts)
+	checkRuns, err := s.client.ListCheckRunsForRef(pr.GetHead().GetSHA())
 	if err != nil {
 		return false, err
 	}
+
 	for _, s := range checkRuns.CheckRuns {
 		if !allowedCheckConclusions[s.GetConclusion()] {
 			log.Infof("Check run:%v, status:%s, %v", pr.GetTitle(), s.GetName(), s.GetConclusion())
@@ -125,13 +86,12 @@ func (s *AutoMergeAction) shouldMergePR(pr *github.PullRequest) (bool, error) {
 		}
 	}
 
-	listOpts := &github.ListOptions{PerPage: 100}
-	reviewers, _, err := s.client.PullRequests.ListReviewers(ctx, s.cfg.RepoOwner, s.cfg.RepoName, pr.GetNumber(), listOpts)
+	reviewers, err := s.client.PullRequestListReviewers(pr.GetNumber())
 	if err != nil {
 		return false, err
 	}
 
-	reviews, _, err := s.client.PullRequests.ListReviews(ctx, s.cfg.RepoOwner, s.cfg.RepoName, pr.GetNumber(), listOpts)
+	reviews, err := s.client.PullRequestListReviews(pr.GetNumber())
 	if err != nil {
 		return false, err
 	}
