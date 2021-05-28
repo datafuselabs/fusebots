@@ -57,10 +57,12 @@ func main() {
 	releaseAction.Start()
 	autoMergeAction := actions.NewAutoMergeAction(cfg)
 	autoMergeAction.Start()
+	issueAction := actions.NewIssueAction(cfg)
+	issueAction.Start()
 
 	hook, _ := github.New(github.Options.Secret(cfg.GithubSecret))
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-		payload, err := hook.Parse(r, github.ReleaseEvent, github.PullRequestEvent)
+		payload, err := hook.Parse(r, github.ReleaseEvent, github.PullRequestEvent, github.IssueCommentEvent)
 		if err != nil {
 			if err == github.ErrEventNotFound {
 				log.Errorf("Unhanle gihutb event: %v", err)
@@ -71,7 +73,11 @@ func main() {
 		if labelAction.DoAction(payload) != nil {
 			log.Errorf("Labeling error: %v", err)
 		}
+		if issueAction.DoAction(payload) != nil {
+			log.Errorf("Issue error: %v", err)
+		}
 	})
+
 	http.ListenAndServe(":3000", nil)
 	labelAction.Stop()
 	releaseAction.Stop()

@@ -194,3 +194,11 @@ func (s *Client) GetLatestRelease() (*github.RepositoryRelease, error) {
 	}
 	return nil, nil
 }
+
+func (s *Client) IssueAssignTo(number int, assignee string) error {
+	ctx, timeout := context.WithTimeout(*s.ctx, 10*time.Second)
+	defer timeout()
+
+	_, _, err := s.client.Issues.AddAssignees(ctx, s.cfg.RepoOwner, s.cfg.RepoName, number, []string{assignee})
+	return err
+}
