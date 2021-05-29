@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"bots/config"
+
 	"github.com/google/go-github/v35/github"
 	"golang.org/x/oauth2"
 )
@@ -200,5 +201,13 @@ func (s *Client) IssueAssignTo(number int, assignee string) error {
 	defer timeout()
 
 	_, _, err := s.client.Issues.AddAssignees(ctx, s.cfg.RepoOwner, s.cfg.RepoName, number, []string{assignee})
+	return err
+}
+
+func (s *Client) AddLabelToIssue(number int, label string) error {
+	ctx, timeout := context.WithTimeout(*s.ctx, 10*time.Second)
+	defer timeout()
+
+	_, _, err := s.client.Issues.AddLabelsToIssue(ctx, s.cfg.RepoOwner, s.cfg.RepoName, number, []string{label})
 	return err
 }
