@@ -41,6 +41,9 @@ func (s *IssueAction) DoAction(event interface{}) error {
 		switch body {
 		case "/assignme":
 			s.client.IssueAssignTo(int(event.Issue.Number), event.Sender.Login)
+		case "/help":
+			help := common.HelpMessage()
+			s.client.CreateComment(int(event.Issue.Number), &help)
 		}
 
 	}

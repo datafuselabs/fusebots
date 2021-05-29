@@ -1,2 +1,2 @@
-fmt:
+lint:
 	go fmt ./...
