@@ -211,3 +211,14 @@ func (s *Client) AddLabelToIssue(number int, label string) error {
 	_, _, err := s.client.Issues.AddLabelsToIssue(ctx, s.cfg.RepoOwner, s.cfg.RepoName, number, []string{label})
 	return err
 }
+
+func (s *Client) RepositoriesDispatch(event string) error {
+	ctx, timeout := context.WithTimeout(*s.ctx, 10*time.Second)
+	defer timeout()
+
+	opts := github.DispatchRequestOptions{
+		EventType: event,
+	}
+	_, _, err := s.client.Repositories.Dispatch(ctx, s.cfg.RepoOwner, s.cfg.RepoName, opts)
+	return err
+}
