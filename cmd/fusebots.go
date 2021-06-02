@@ -59,8 +59,6 @@ func main() {
 	autoMergeAction.Start()
 	issueAction := actions.NewIssueAction(cfg)
 	issueAction.Start()
-	prAction := actions.NewPrAction(cfg)
-	prAction.Start()
 
 	hook, _ := github.New(github.Options.Secret(cfg.GithubSecret))
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
@@ -77,9 +75,6 @@ func main() {
 		}
 		if issueAction.DoAction(payload) != nil {
 			log.Errorf("Issue error: %v", err)
-		}
-		if prAction.DoAction(payload) != nil {
-			log.Errorf("PR error: %v", err)
 		}
 	})
 
