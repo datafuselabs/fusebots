@@ -81,6 +81,12 @@ func (s *ReleaseAction) releaseHandle(typ string, preRelease bool) error {
 		var labelPr = make(map[string][]*github.PullRequest)
 		for _, pr := range prs {
 			for _, label := range pr.Labels {
+				// Skip the exclude prs.
+				if s.yml.ExcludeCheck(label.GetName()) {
+					log.Infof("Skip the exclude label: %v", label.GetName())
+					continue
+				}
+
 				title := s.yml.GetCategoryByLabel(label.GetName())
 				prs = labelPr[title]
 				if prs == nil {

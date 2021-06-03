@@ -23,3 +23,6 @@ categories:
   - title: 'Others'
     labels:
       - 'pr-other'
+
+excludes:
+  - 'pr-not-for-changelog'

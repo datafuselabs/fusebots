@@ -17,6 +17,7 @@ type Category struct {
 
 type Categories struct {
 	Categories []Category `yaml:"categories"`
+	Excludes   []string   `yaml:"excludes"`
 }
 
 type ReleaseConfig struct {
@@ -50,4 +51,13 @@ func (s *ReleaseConfig) GetCategoryByLabel(label string) string {
 		}
 	}
 	return "Others"
+}
+
+func (s *ReleaseConfig) ExcludeCheck(label string) bool {
+	for _, exclude := range s.Categories.Excludes {
+		if label == exclude {
+			return true
+		}
+	}
+	return false
 }
