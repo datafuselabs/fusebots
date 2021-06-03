@@ -115,7 +115,6 @@ func (s *Client) PullRequestListReviews(number int) ([]*github.PullRequestReview
 	opts := &github.ListOptions{PerPage: 100}
 	reviews, _, err := s.client.PullRequests.ListReviews(ctx, s.cfg.RepoOwner, s.cfg.RepoName, number, opts)
 	return reviews, err
-
 }
 
 func (s *Client) GetMergedPullRequestsAfter(branch string, after time.Time) ([]*github.PullRequest, error) {

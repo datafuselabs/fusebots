@@ -46,6 +46,7 @@ func (s *AutoMergeAction) autoMergeCron() {
 
 			if err := s.client.PullRequestMerge(pr.GetNumber(), ""); err != nil {
 				log.Errorf("Do merge error:%+v", err)
+				continue
 			}
 			log.Infof("Merge %v succuess", pr.GetNumber())
 		}
@@ -91,11 +92,42 @@ func (s *AutoMergeAction) shouldMergePR(pr *github.PullRequest) (bool, error) {
 		return false, err
 	}
 
+	reviewers, err := s.client.PullRequestListReviewers(pr.GetNumber())
+	if err != nil {
+		return false, err
+	}
+
+	approves := 0
 	for _, review := range reviews {
-		log.Infof("Review name:%v, status:%v", review.GetUser().GetLogin(), review.GetState())
+		name := review.GetUser().GetLogin()
+		state := review.GetState()
+		log.Infof("Review name:%v, status:%v", name, state)
 		if review.GetState() == "APPROVED" {
+			for _, user := range reviewers.Users {
+				if user.GetLogin() == name {
+					approves++
+					log.Infof("Review name:%v approved:%v", user.GetLogin(), approves)
+					break
+				}
+			}
+		}
+	}
+
+	major := (len(reviewers.Users) + 1) / 2
+	log.Infof("PR approved(rule:%v) with approved:%v of major %v", s.cfg.ApprovedRule, approves, major)
+	switch s.cfg.ApprovedRule {
+	case "most":
+		if approves != 0 {
+			if approves >= major {
+				return true, nil
+			}
+		}
+
+	case "less":
+		if approves > 0 {
 			return true, nil
 		}
 	}
+
 	return false, nil
 }

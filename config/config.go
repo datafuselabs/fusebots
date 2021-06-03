@@ -15,6 +15,7 @@ type Config struct {
 	RepoName         string
 	NightReleaseCron string
 	MergeCheckCron   string
+	ApprovedRule     string
 }
 
 func LoadConfig(file string) (*Config, error) {
@@ -29,6 +30,7 @@ func LoadConfig(file string) (*Config, error) {
 	cfg.RepoOwner = load.Section("repo").Key("owner").String()
 	cfg.RepoName = load.Section("repo").Key("name").String()
 
+	// Schedule.
 	cfg.NightReleaseCron = load.Section("schedule").Key("nightly_release_cron").String()
 	if cfg.NightReleaseCron == "" {
 		cfg.NightReleaseCron = "@daliy"
@@ -36,6 +38,12 @@ func LoadConfig(file string) (*Config, error) {
 	cfg.MergeCheckCron = load.Section("schedule").Key("merge_check_cron").String()
 	if cfg.MergeCheckCron == "" {
 		cfg.MergeCheckCron = "@every 30s"
+	}
+
+	// Rule.
+	cfg.ApprovedRule = load.Section("rule").Key("approved_rule").String()
+	if cfg.ApprovedRule == "" {
+		cfg.ApprovedRule = "most"
 	}
 	return cfg, nil
 }
