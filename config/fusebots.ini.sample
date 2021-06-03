@@ -17,3 +17,6 @@ merge_check_cron = "@every 10s"
 # if >=half most
 # if < half less
 approved_rule = "most"
+
+[comment]
+pr_need_review_comment = "Hello @%v, Your pull request state is not in Draft, please add Reviewers or Re-request review again!"

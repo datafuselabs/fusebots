@@ -9,13 +9,14 @@ import (
 )
 
 type Config struct {
-	GithubToken      string
-	GithubSecret     string
-	RepoOwner        string
-	RepoName         string
-	NightReleaseCron string
-	MergeCheckCron   string
-	ApprovedRule     string
+	GithubToken                  string
+	GithubSecret                 string
+	RepoOwner                    string
+	RepoName                     string
+	NightReleaseCron             string
+	MergeCheckCron               string
+	ApprovedRule                 string
+	PullRequestNeedReviewComment string
 }
 
 func LoadConfig(file string) (*Config, error) {
@@ -45,5 +46,9 @@ func LoadConfig(file string) (*Config, error) {
 	if cfg.ApprovedRule == "" {
 		cfg.ApprovedRule = "most"
 	}
+
+	// Comments.
+	cfg.PullRequestNeedReviewComment = load.Section("comment").Key("pr_need_review_comment").String()
+
 	return cfg, nil
 }

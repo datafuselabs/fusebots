@@ -59,6 +59,8 @@ func main() {
 	autoMergeAction.Start()
 	issueAction := actions.NewIssueAction(cfg)
 	issueAction.Start()
+	prCheckAction := actions.NewPullRequestCheckAction(cfg)
+	prCheckAction.Start()
 
 	hook, _ := github.New(github.Options.Secret(cfg.GithubSecret))
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
@@ -69,12 +71,15 @@ func main() {
 			}
 		}
 
-		// Labeling.
 		if labelAction.DoAction(payload) != nil {
 			log.Errorf("Labeling error: %v", err)
 		}
+
 		if issueAction.DoAction(payload) != nil {
 			log.Errorf("Issue error: %v", err)
+		}
+		if prCheckAction.DoAction(payload) != nil {
+			log.Errorf("PullRequest check error: %v", err)
 		}
 	})
 
