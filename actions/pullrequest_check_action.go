@@ -39,7 +39,7 @@ func (s *PullRequestCheckAction) DoAction(event interface{}) error {
 		log.Infof("Pull request check: %+v coming", pr.Number)
 
 		// Pr need reviewer.
-		if !pr.Draft {
+		if !pr.Draft && *pr.Mergeable {
 			reviewers, err := s.client.PullRequestListReviewers(int(pr.Number))
 			if err != nil {
 				return err
