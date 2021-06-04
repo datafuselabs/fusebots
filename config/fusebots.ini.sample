@@ -20,3 +20,6 @@ approved_rule = "most"
 
 [comment]
 pr_need_review_comment = "Hello @%v, Your pull request state is not in Draft, please add Reviewers or Re-request review again!"
+
+[reviewer]
+hints = "FuseQuery: @BohuTANG @sundy-li @zhang2014\nFuseStore: @drmingdrmer @dantengsky"

@@ -17,6 +17,7 @@ type Config struct {
 	MergeCheckCron               string
 	ApprovedRule                 string
 	PullRequestNeedReviewComment string
+	ReviewerHints                string
 }
 
 func LoadConfig(file string) (*Config, error) {
@@ -49,6 +50,12 @@ func LoadConfig(file string) (*Config, error) {
 
 	// Comments.
 	cfg.PullRequestNeedReviewComment = load.Section("comment").Key("pr_need_review_comment").String()
+
+	// Review.
+	cfg.ReviewerHints = load.Section("reviewer").Key("hints").String()
+	if cfg.ReviewerHints == "" {
+		cfg.ReviewerHints = "@BohuTANG"
+	}
 
 	return cfg, nil
 }

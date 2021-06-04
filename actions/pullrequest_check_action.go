@@ -47,6 +47,7 @@ func (s *PullRequestCheckAction) DoAction(event interface{}) error {
 			if len(reviewers.Users) == 0 {
 				if s.cfg.PullRequestNeedReviewComment != "" {
 					comments := fmt.Sprintf(s.cfg.PullRequestNeedReviewComment, pr.User.Login)
+					comments += s.cfg.ReviewerHints
 					s.client.CreateComment(int(pr.Number), &comments)
 				}
 			}
