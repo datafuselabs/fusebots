@@ -221,3 +221,17 @@ func (s *Client) RepositoriesDispatch(event string) error {
 	_, _, err := s.client.Repositories.Dispatch(ctx, s.cfg.RepoOwner, s.cfg.RepoName, opts)
 	return err
 }
+
+func (s *Client) CreateStatus(sha string, title string, desc string, state string, target_url string) error {
+	ctx, timeout := context.WithTimeout(*s.ctx, 10*time.Second)
+	defer timeout()
+
+	status := &github.RepoStatus{}
+	status.State = &state
+	status.Context = &title
+	status.Description = &desc
+	status.TargetURL = &target_url
+
+	_, _, err := s.client.Repositories.CreateStatus(ctx, s.cfg.RepoOwner, s.cfg.RepoName, sha, status)
+	return err
+}
