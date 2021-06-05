@@ -21,3 +21,10 @@ pr_need_review_comment = "Hello @%v, Your pull request state is not in Draft, pl
 
 [reviewer]
 hints = "FuseQuery: @BohuTANG @sundy-li @zhang2014\nFuseStore: @drmingdrmer @dantengsky"
+
+[pr_description_action]
+title = "Description check"
+pending_desc = "Checking"
+error_desc = "Description error"
+success_desc = "Description OK"
+target_url = "https://github.com/datafuselabs/datafuse/blob/master/.github/PULL_REQUEST_TEMPLATE.md"

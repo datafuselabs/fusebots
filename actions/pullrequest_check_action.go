@@ -59,17 +59,14 @@ func (s *PullRequestCheckAction) DoAction(event interface{}) error {
 func (s *PullRequestCheckAction) descriptionCheck(payload github.PullRequestPayload) error {
 	pr := payload.PullRequest
 	sha := pr.Head.Sha
-	title := "Description check"
-	desc := "Checking"
-	url := "https://datafuse.rs"
 
 	go func() {
-		if err := s.client.CreateStatus(sha, title, desc, state_pending, url); err != nil {
+		if err := s.client.CreateStatus(sha, s.cfg.PRDescriptionAction.Title, s.cfg.PRDescriptionAction.PendingDesc, state_pending, s.cfg.PRDescriptionAction.TargetUrl); err != nil {
 			log.Errorf("Desciption check status create error: %+v ", err)
 			return
 		}
 
-		if err := s.client.CreateStatus(sha, title, desc, state_success, url); err != nil {
+		if err := s.client.CreateStatus(sha, s.cfg.PRDescriptionAction.Title, s.cfg.PRDescriptionAction.SuccessDesc, state_success, s.cfg.PRDescriptionAction.TargetUrl); err != nil {
 			log.Errorf("Desciption check status create error: %+v ", err)
 			return
 		}

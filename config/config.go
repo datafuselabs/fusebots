@@ -11,14 +11,23 @@ import (
 )
 
 type GithubConfig struct {
-	GithubToken  string `ini:token`
+	GithubToken  string `ini:"token"`
 	GithubSecret string `ini:"secret"`
 	RepoOwner    string `ini:"owner"`
 	RepoName     string `ini:"name"`
 }
 
+type PRDescriptionActionConfig struct {
+	Title       string `ini:"title"`
+	PendingDesc string `ini:"pending_desc"`
+	ErrorDesc   string `ini:"error_desc"`
+	SuccessDesc string `ini:"success_desc"`
+	TargetUrl   string `ini:"target_url"`
+}
+
 type Config struct {
 	Github                       *GithubConfig
+	PRDescriptionAction          *PRDescriptionActionConfig
 	NightReleaseCron             string
 	MergeCheckCron               string
 	ApprovedRule                 string
@@ -33,10 +42,18 @@ func LoadConfig(file string) (*Config, error) {
 		return nil, err
 	}
 
+	// Github.
 	cfg.Github = new(GithubConfig)
 	if err := load.Section("github").MapTo(cfg.Github); err != nil {
 		log.Fatalf("Can not load gihutb section:%+v", err)
 	}
+
+	// PR desc action.
+	cfg.PRDescriptionAction = new(PRDescriptionActionConfig)
+	if err := load.Section("pr_description_action").MapTo(cfg.PRDescriptionAction); err != nil {
+		log.Fatalf("Can not load pr description action section:%+v", err)
+	}
+	log.Printf("Pr desc action action:%+v", cfg.PRDescriptionAction)
 
 	// Schedule.
 	cfg.NightReleaseCron = load.Section("schedule").Key("nightly_release_cron").String()
