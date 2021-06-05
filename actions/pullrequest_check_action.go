@@ -45,6 +45,12 @@ func (s *PullRequestCheckAction) DoAction(event interface{}) error {
 	switch event := event.(type) {
 	case github.PullRequestPayload:
 		log.Infof("Pull request check: %+v coming", event.Number)
+		user := event.PullRequest.User.Login
+
+		// If user in allow list, skip check.
+		if s.allowList(user) {
+			return nil
+		}
 
 		if err := s.descriptionCheck(event); err != nil {
 			log.Errorf("Desciption check error: %+v ", err)
@@ -95,6 +101,17 @@ func (s *PullRequestCheckAction) descriptionCheck(payload github.PullRequestPayl
 
 	}()
 	return nil
+}
+
+func (s *PullRequestCheckAction) allowList(user string) bool {
+	for _, pattern := range s.cfg.PRDescriptionAction.AllowList {
+		re := regexp.MustCompile(pattern)
+		if re.Match([]byte(user)) {
+			return true
+		}
+	}
+	return false
+
 }
 
 func (s *PullRequestCheckAction) reviewerCheck(payload github.PullRequestPayload) error {

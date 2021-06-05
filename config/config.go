@@ -24,6 +24,7 @@ type PRDescriptionActionConfig struct {
 	SuccessDesc string   `ini:"success_desc"`
 	TargetUrl   string   `ini:"target_url"`
 	Checks      []string `ini:"checks"`
+	AllowList   []string `ini:"allowlist"`
 }
 
 type Config struct {
