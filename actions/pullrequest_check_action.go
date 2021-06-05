@@ -9,6 +9,8 @@ import (
 	"bots/common"
 	"bots/config"
 	"fmt"
+	"regexp"
+	"strings"
 
 	"github.com/go-playground/webhooks/v6/github"
 	log "github.com/sirupsen/logrus"
@@ -61,14 +63,33 @@ func (s *PullRequestCheckAction) descriptionCheck(payload github.PullRequestPayl
 	sha := pr.Head.Sha
 
 	go func() {
+		log.Infof("Pull request desc check: %+v coming", pr.Number)
 		if err := s.client.CreateStatus(sha, s.cfg.PRDescriptionAction.Title, s.cfg.PRDescriptionAction.PendingDesc, state_pending, s.cfg.PRDescriptionAction.TargetUrl); err != nil {
 			log.Errorf("Desciption check status create error: %+v ", err)
 			return
 		}
 
-		if err := s.client.CreateStatus(sha, s.cfg.PRDescriptionAction.Title, s.cfg.PRDescriptionAction.SuccessDesc, state_success, s.cfg.PRDescriptionAction.TargetUrl); err != nil {
-			log.Errorf("Desciption check status create error: %+v ", err)
-			return
+		check := true
+		searchable := strings.Join([]string{pr.Body}, " ")
+		for _, pattern := range s.cfg.PRDescriptionAction.Checks {
+			re := regexp.MustCompile(pattern)
+			if !re.Match([]byte(searchable)) {
+				check = false
+				break
+			}
+		}
+
+		if !check {
+			if err := s.client.CreateStatus(sha, s.cfg.PRDescriptionAction.Title, s.cfg.PRDescriptionAction.ErrorDesc, state_error, s.cfg.PRDescriptionAction.TargetUrl); err != nil {
+				log.Errorf("Desciption check status create error: %+v ", err)
+				return
+			}
+
+		} else {
+			if err := s.client.CreateStatus(sha, s.cfg.PRDescriptionAction.Title, s.cfg.PRDescriptionAction.SuccessDesc, state_success, s.cfg.PRDescriptionAction.TargetUrl); err != nil {
+				log.Errorf("Desciption check status create error: %+v ", err)
+				return
+			}
 		}
 
 	}()

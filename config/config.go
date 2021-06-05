@@ -18,11 +18,12 @@ type GithubConfig struct {
 }
 
 type PRDescriptionActionConfig struct {
-	Title       string `ini:"title"`
-	PendingDesc string `ini:"pending_desc"`
-	ErrorDesc   string `ini:"error_desc"`
-	SuccessDesc string `ini:"success_desc"`
-	TargetUrl   string `ini:"target_url"`
+	Title       string   `ini:"title"`
+	PendingDesc string   `ini:"pending_desc"`
+	ErrorDesc   string   `ini:"error_desc"`
+	SuccessDesc string   `ini:"success_desc"`
+	TargetUrl   string   `ini:"target_url"`
+	Checks      []string `ini:"checks"`
 }
 
 type Config struct {
