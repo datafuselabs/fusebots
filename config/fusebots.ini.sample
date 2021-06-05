@@ -28,4 +28,4 @@ pending_desc = "Checking"
 error_desc = "Description error"
 success_desc = "Description OK"
 target_url = "https://github.com/datafuselabs/datafuse/blob/master/.github/PULL_REQUEST_TEMPLATE.md"
-checks = "\b## Changelog?\b", "\b## Summary?\b"
+checks = \bChangelog?\b, \bSummary?\b'

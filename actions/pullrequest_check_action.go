@@ -79,6 +79,7 @@ func (s *PullRequestCheckAction) descriptionCheck(payload github.PullRequestPayl
 			}
 		}
 
+		log.Infof("Pull request desc check: %+v ", check)
 		if !check {
 			if err := s.client.CreateStatus(sha, s.cfg.PRDescriptionAction.Title, s.cfg.PRDescriptionAction.ErrorDesc, state_error, s.cfg.PRDescriptionAction.TargetUrl); err != nil {
 				log.Errorf("Desciption check status create error: %+v ", err)
