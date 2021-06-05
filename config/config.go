@@ -5,14 +5,20 @@
 package config
 
 import (
+	"log"
+
 	ini "gopkg.in/ini.v1"
 )
 
+type GithubConfig struct {
+	GithubToken  string `ini:token`
+	GithubSecret string `ini:"secret"`
+	RepoOwner    string `ini:"owner"`
+	RepoName     string `ini:"name"`
+}
+
 type Config struct {
-	GithubToken                  string
-	GithubSecret                 string
-	RepoOwner                    string
-	RepoName                     string
+	Github                       *GithubConfig
 	NightReleaseCron             string
 	MergeCheckCron               string
 	ApprovedRule                 string
@@ -27,10 +33,10 @@ func LoadConfig(file string) (*Config, error) {
 		return nil, err
 	}
 
-	cfg.GithubToken = load.Section("github").Key("token").String()
-	cfg.GithubSecret = load.Section("github").Key("secret").String()
-	cfg.RepoOwner = load.Section("repo").Key("owner").String()
-	cfg.RepoName = load.Section("repo").Key("name").String()
+	cfg.Github = new(GithubConfig)
+	if err := load.Section("github").MapTo(cfg.Github); err != nil {
+		log.Fatalf("Can not load gihutb section:%+v", err)
+	}
 
 	// Schedule.
 	cfg.NightReleaseCron = load.Section("schedule").Key("nightly_release_cron").String()

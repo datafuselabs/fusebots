@@ -26,7 +26,7 @@ func NewClient(cfg *config.Config) *Client {
 	ctx := context.Background()
 
 	ts := oauth2.StaticTokenSource(&oauth2.Token{
-		AccessToken: cfg.GithubToken,
+		AccessToken: cfg.Github.GithubToken,
 	})
 	tc := oauth2.NewClient(ctx, ts)
 	client := github.NewClient(tc)
@@ -45,7 +45,7 @@ func (s *Client) CreateComment(number int, comment *string) error {
 	issueComment := &github.IssueComment{
 		Body: comment,
 	}
-	_, _, err := s.client.Issues.CreateComment(ctx, s.cfg.RepoOwner, s.cfg.RepoName, number, issueComment)
+	_, _, err := s.client.Issues.CreateComment(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, number, issueComment)
 	return err
 }
 
@@ -56,7 +56,7 @@ func (s *Client) PullRequestMerge(number int, comment string) error {
 	opts := github.PullRequestOptions{
 		MergeMethod: "merge",
 	}
-	_, _, err := s.client.PullRequests.Merge(ctx, s.cfg.RepoOwner, s.cfg.RepoName, number, comment, &opts)
+	_, _, err := s.client.PullRequests.Merge(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, number, comment, &opts)
 	return err
 }
 
@@ -73,7 +73,7 @@ func (s *Client) PullRequestList() ([]*github.PullRequest, error) {
 	}
 
 	for {
-		prs, resp, err := s.client.PullRequests.List(ctx, s.cfg.RepoOwner, s.cfg.RepoName, opts)
+		prs, resp, err := s.client.PullRequests.List(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, opts)
 		if err != nil {
 			return results, err
 		}
@@ -94,7 +94,7 @@ func (s *Client) ListCheckRunsForRef(ref string) (*github.ListCheckRunsResults, 
 	defer timeout()
 
 	opts := &github.ListCheckRunsOptions{ListOptions: github.ListOptions{PerPage: 100}}
-	checkRuns, _, err := s.client.Checks.ListCheckRunsForRef(ctx, s.cfg.RepoOwner, s.cfg.RepoName, ref, opts)
+	checkRuns, _, err := s.client.Checks.ListCheckRunsForRef(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, ref, opts)
 
 	return checkRuns, err
 }
@@ -104,7 +104,7 @@ func (s *Client) PullRequestListReviewers(number int) (*github.Reviewers, error)
 	defer timeout()
 
 	opts := &github.ListOptions{PerPage: 100}
-	reviewers, _, err := s.client.PullRequests.ListReviewers(ctx, s.cfg.RepoOwner, s.cfg.RepoName, number, opts)
+	reviewers, _, err := s.client.PullRequests.ListReviewers(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, number, opts)
 	return reviewers, err
 }
 
@@ -113,7 +113,7 @@ func (s *Client) PullRequestListReviews(number int) ([]*github.PullRequestReview
 	defer timeout()
 
 	opts := &github.ListOptions{PerPage: 100}
-	reviews, _, err := s.client.PullRequests.ListReviews(ctx, s.cfg.RepoOwner, s.cfg.RepoName, number, opts)
+	reviews, _, err := s.client.PullRequests.ListReviews(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, number, opts)
 	return reviews, err
 }
 
@@ -131,7 +131,7 @@ func (s *Client) GetMergedPullRequestsAfter(branch string, after time.Time) ([]*
 
 	var prList []*github.PullRequest
 	for {
-		prs, resp, err := s.client.PullRequests.List(ctx, s.cfg.RepoOwner, s.cfg.RepoName, opts)
+		prs, resp, err := s.client.PullRequests.List(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, opts)
 		if err != nil {
 			return nil, fmt.Errorf("call listing pull requests API: %w", err)
 		}
@@ -169,7 +169,7 @@ func (s *Client) CreateRelease(tagName, body string, preRelease bool) (*github.R
 	ctx, timeout := context.WithTimeout(*s.ctx, 10*time.Second)
 	defer timeout()
 
-	release, _, err := s.client.Repositories.CreateRelease(ctx, s.cfg.RepoOwner, s.cfg.RepoName, &github.RepositoryRelease{
+	release, _, err := s.client.Repositories.CreateRelease(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, &github.RepositoryRelease{
 		TagName:    github.String(tagName),
 		Name:       github.String(tagName),
 		Body:       github.String(body),
@@ -185,7 +185,7 @@ func (s *Client) GetLatestRelease() (*github.RepositoryRelease, error) {
 	ctx, timeout := context.WithTimeout(*s.ctx, 10*time.Second)
 	defer timeout()
 
-	releases, _, err := s.client.Repositories.ListReleases(ctx, s.cfg.RepoOwner, s.cfg.RepoName, &github.ListOptions{Page: 1, PerPage: 10})
+	releases, _, err := s.client.Repositories.ListReleases(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, &github.ListOptions{Page: 1, PerPage: 10})
 	if err != nil {
 		return nil, err
 	}
@@ -199,7 +199,7 @@ func (s *Client) IssueAssignTo(number int, assignee string) error {
 	ctx, timeout := context.WithTimeout(*s.ctx, 10*time.Second)
 	defer timeout()
 
-	_, _, err := s.client.Issues.AddAssignees(ctx, s.cfg.RepoOwner, s.cfg.RepoName, number, []string{assignee})
+	_, _, err := s.client.Issues.AddAssignees(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, number, []string{assignee})
 	return err
 }
 
@@ -207,7 +207,7 @@ func (s *Client) AddLabelToIssue(number int, label string) error {
 	ctx, timeout := context.WithTimeout(*s.ctx, 10*time.Second)
 	defer timeout()
 
-	_, _, err := s.client.Issues.AddLabelsToIssue(ctx, s.cfg.RepoOwner, s.cfg.RepoName, number, []string{label})
+	_, _, err := s.client.Issues.AddLabelsToIssue(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, number, []string{label})
 	return err
 }
 
@@ -218,7 +218,7 @@ func (s *Client) RepositoriesDispatch(event string) error {
 	opts := github.DispatchRequestOptions{
 		EventType: event,
 	}
-	_, _, err := s.client.Repositories.Dispatch(ctx, s.cfg.RepoOwner, s.cfg.RepoName, opts)
+	_, _, err := s.client.Repositories.Dispatch(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, opts)
 	return err
 }
 
@@ -232,6 +232,6 @@ func (s *Client) CreateStatus(sha string, title string, desc string, state strin
 	status.Description = &desc
 	status.TargetURL = &target_url
 
-	_, _, err := s.client.Repositories.CreateStatus(ctx, s.cfg.RepoOwner, s.cfg.RepoName, sha, status)
+	_, _, err := s.client.Repositories.CreateStatus(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, sha, status)
 	return err
 }

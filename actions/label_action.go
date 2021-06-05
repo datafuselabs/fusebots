@@ -7,6 +7,7 @@ package actions
 import (
 	"bots/config"
 	"encoding/json"
+
 	"github.com/go-playground/webhooks/v6/github"
 	"github.com/jimschubert/labeler"
 	log "github.com/sirupsen/logrus"
@@ -36,7 +37,7 @@ func (s *LabelerAction) DoAction(event interface{}) error {
 		log.Infof("Pull reqeust: %+v coming", pr.Number)
 		body, _ := json.Marshal(pr)
 		data := string(body)
-		l, err := labeler.New(s.cfg.RepoOwner, s.cfg.RepoName, "pull_request", int(pr.Number), &data)
+		l, err := labeler.New(s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, "pull_request", int(pr.Number), &data)
 		if err != nil {
 			return err
 		}

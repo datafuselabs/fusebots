@@ -47,8 +47,8 @@ func main() {
 	if err != nil {
 		log.Fatal("Load config error: %v", err)
 	}
-	log.Infof("Repo: %v/%v webhooks starts... ", cfg.RepoOwner, cfg.RepoName)
-	os.Setenv("GITHUB_TOKEN", cfg.GithubToken)
+	log.Infof("Repo: %v/%v webhooks starts... ", cfg.Github.RepoOwner, cfg.Github.RepoName)
+	os.Setenv("GITHUB_TOKEN", cfg.Github.GithubToken)
 
 	// Actions.
 	labelAction := actions.NewLabelerAction(cfg)
@@ -62,7 +62,7 @@ func main() {
 	prCheckAction := actions.NewPullRequestCheckAction(cfg)
 	prCheckAction.Start()
 
-	hook, _ := github.New(github.Options.Secret(cfg.GithubSecret))
+	hook, _ := github.New(github.Options.Secret(cfg.Github.GithubSecret))
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		payload, err := hook.Parse(r, github.ReleaseEvent, github.PullRequestEvent, github.IssueCommentEvent)
 		if err != nil {
