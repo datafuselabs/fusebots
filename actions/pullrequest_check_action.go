@@ -14,6 +14,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	state_pending = "pending"
+	state_error   = "error"
+	state_success = "success"
+)
+
 type PullRequestCheckAction struct {
 	cfg    *config.Config
 	client *common.Client
@@ -55,11 +61,15 @@ func (s *PullRequestCheckAction) descriptionCheck(payload github.PullRequestPayl
 	sha := pr.Head.Sha
 	title := "Description check"
 	desc := "Checking"
-	status := "pending"
 	url := "https://datafuse.rs"
 
 	go func() {
-		if err := s.client.CreateStatus(sha, title, desc, status, url); err != nil {
+		if err := s.client.CreateStatus(sha, title, desc, state_pending, url); err != nil {
+			log.Errorf("Desciption check status create error: %+v ", err)
+			return
+		}
+
+		if err := s.client.CreateStatus(sha, title, desc, state_success, url); err != nil {
 			log.Errorf("Desciption check status create error: %+v ", err)
 			return
 		}
