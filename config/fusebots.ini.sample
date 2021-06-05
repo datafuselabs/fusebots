@@ -28,4 +28,4 @@ pending_desc = "Checking"
 error_desc = "Description error"
 success_desc = "Description OK"
 target_url = "https://github.com/datafuselabs/datafuse/blob/master/.github/PULL_REQUEST_TEMPLATE.md"
-checks = \bChangelog?\b, \bSummary?\b'
+checks = \bI hereby agree to the terms of the CLA available at: https://datafuse.rs/policies/cla/?\b, \bChangelog?\b, \bSummary?\b
