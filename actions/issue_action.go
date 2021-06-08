@@ -7,6 +7,7 @@ package actions
 import (
 	"bots/common"
 	"bots/config"
+	"fmt"
 
 	"github.com/go-playground/webhooks/v6/github"
 	log "github.com/sirupsen/logrus"
@@ -45,6 +46,16 @@ func (s *IssueAction) DoAction(event interface{}) error {
 		case "/help":
 			help := common.HelpMessage()
 			s.client.CreateComment(int(event.Issue.Number), &help)
+		}
+
+	case github.IssuesPayload:
+		first, err := s.client.IssuesForFirstTime(event.Sender.Login)
+		if err != nil {
+			return err
+		}
+		if first {
+			comments := fmt.Sprintf(s.cfg.Hints.IssueFirstTimeComment, event.Sender.Login)
+			s.client.CreateComment(int(event.Issue.Number), &comments)
 		}
 
 	}

@@ -64,7 +64,7 @@ func main() {
 
 	hook, _ := github.New(github.Options.Secret(cfg.Github.GithubSecret))
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-		payload, err := hook.Parse(r, github.ReleaseEvent, github.PullRequestEvent, github.IssueCommentEvent)
+		payload, err := hook.Parse(r, github.ReleaseEvent, github.PullRequestEvent, github.IssueCommentEvent, github.IssuesEvent)
 		if err != nil {
 			if err == github.ErrEventNotFound {
 				log.Errorf("Unhanle gihutb event: %v", err)

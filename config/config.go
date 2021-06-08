@@ -10,6 +10,11 @@ import (
 	ini "gopkg.in/ini.v1"
 )
 
+type HintConfig struct {
+	IssueFirstTimeComment string `ini:"issue_first_time_comment"`
+	PRNeedReviewComment   string `ini:"pr_need_review_comment"`
+}
+
 type GithubConfig struct {
 	GithubToken  string `ini:"token"`
 	GithubSecret string `ini:"secret"`
@@ -28,13 +33,12 @@ type PRDescriptionActionConfig struct {
 }
 
 type Config struct {
-	Github                       *GithubConfig
-	PRDescriptionAction          *PRDescriptionActionConfig
-	NightReleaseCron             string
-	MergeCheckCron               string
-	ApprovedRule                 string
-	PullRequestNeedReviewComment string
-	ReviewerHints                string
+	Github              *GithubConfig
+	PRDescriptionAction *PRDescriptionActionConfig
+	Hints               *HintConfig
+	NightReleaseCron    string
+	MergeCheckCron      string
+	ApprovedRule        string
 }
 
 func LoadConfig(file string) (*Config, error) {
@@ -73,14 +77,12 @@ func LoadConfig(file string) (*Config, error) {
 		cfg.ApprovedRule = "most"
 	}
 
-	// Comments.
-	cfg.PullRequestNeedReviewComment = load.Section("comment").Key("pr_need_review_comment").String()
-
-	// Review.
-	cfg.ReviewerHints = load.Section("reviewer").Key("hints").String()
-	if cfg.ReviewerHints == "" {
-		cfg.ReviewerHints = "@BohuTANG"
+	// Hints.
+	cfg.Hints = new(HintConfig)
+	if err := load.Section("hint").MapTo(cfg.Hints); err != nil {
+		log.Fatalf("Can not load hint section:%+v", err)
 	}
+	log.Printf("Hint action:%+v", cfg.Hints)
 
 	return cfg, nil
 }

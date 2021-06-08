@@ -235,3 +235,18 @@ func (s *Client) CreateStatus(sha string, title string, desc string, state strin
 	_, _, err := s.client.Repositories.CreateStatus(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, sha, status)
 	return err
 }
+
+func (s *Client) IssuesForFirstTime(user string) (bool, error) {
+	ctx, timeout := context.WithTimeout(*s.ctx, 10*time.Second)
+	defer timeout()
+
+	opts := &github.IssueListByRepoOptions{
+		Creator: user,
+	}
+
+	if issues, _, err := s.client.Issues.ListByRepo(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, opts); err != nil {
+		return false, err
+	} else {
+		return len(issues) == 0, nil
+	}
+}
