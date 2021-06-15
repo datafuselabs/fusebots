@@ -49,13 +49,15 @@ func (s *IssueAction) DoAction(event interface{}) error {
 		}
 
 	case github.IssuesPayload:
-		first, err := s.client.IssuesForFirstTime(event.Issue.User.Login)
-		if err != nil {
-			return err
-		}
-		if first {
-			comments := fmt.Sprintf(s.cfg.Hints.IssueFirstTimeComment, event.Issue.User.Login)
-			s.client.CreateComment(int(event.Issue.Number), &comments)
+		if event.Issue.State == "open" {
+			first, err := s.client.IssuesForFirstTime(event.Issue.User.Login)
+			if err != nil {
+				return err
+			}
+			if first {
+				comments := fmt.Sprintf(s.cfg.Hints.IssueFirstTimeComment, event.Issue.User.Login)
+				s.client.CreateComment(int(event.Issue.Number), &comments)
+			}
 		}
 
 	}
