@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/go-playground/webhooks/v6/github"
 	log "github.com/sirupsen/logrus"
@@ -20,6 +21,11 @@ const (
 	state_pending = "pending"
 	state_error   = "error"
 	state_success = "success"
+)
+
+// inmemory state
+var (
+	reviewerChecked sync.Map
 )
 
 type PullRequestCheckAction struct {
@@ -118,14 +124,16 @@ func (s *PullRequestCheckAction) reviewerCheck(payload github.PullRequestPayload
 	pr := payload.PullRequest
 	// Pr need reviewer.
 	if !pr.Draft && *pr.Mergeable {
-		reviewers, err := s.client.PullRequestListReviewers(int(pr.Number))
-		if err != nil {
-			return err
-		}
-		if len(reviewers.Users) == 0 {
-			if s.cfg.Hints.PRNeedReviewComment != "" {
-				comments := fmt.Sprintf(s.cfg.Hints.PRNeedReviewComment, pr.User.Login)
-				s.client.CreateComment(int(pr.Number), &comments)
+		if _, loaded := reviewerChecked.LoadOrStore(pr.ID, true); !loaded {
+			reviewers, err := s.client.PullRequestListReviewers(int(pr.Number))
+			if err != nil {
+				return err
+			}
+			if len(reviewers.Users) == 0 {
+				if s.cfg.Hints.PRNeedReviewComment != "" {
+					comments := fmt.Sprintf(s.cfg.Hints.PRNeedReviewComment, pr.User.Login)
+					s.client.CreateComment(int(pr.Number), &comments)
+				}
 			}
 		}
 	}
