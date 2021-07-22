@@ -54,7 +54,7 @@ func (s *Client) PullRequestMerge(number int, comment string) error {
 	defer timeout()
 
 	opts := github.PullRequestOptions{
-		MergeMethod: "merge",
+		MergeMethod: "squash",
 	}
 	_, _, err := s.client.PullRequests.Merge(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, number, comment, &opts)
 	return err
@@ -77,9 +77,9 @@ func (s *Client) PullRequestList() ([]*github.PullRequest, error) {
 		if err != nil {
 			return results, err
 		}
-		for _, pr := range prs {
-			results = append(results, pr)
-		}
+
+		results = append(results, prs...)
+
 		if resp.NextPage == 0 {
 			break
 		}
