@@ -130,5 +130,5 @@ func createSemanticVersion(versions []int, typ bumpType) string {
 }
 
 func HelpMessage() string {
-	return "/assignme -- assign the issue to you\n/help -- show help"
+	return "/assignme -- assign the issue to you\nr? @[username] -- take a reviewer\n/help -- show help"
 }
