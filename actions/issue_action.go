@@ -8,6 +8,7 @@ import (
 	"bots/common"
 	"bots/config"
 	"fmt"
+	"strings"
 
 	"github.com/go-playground/webhooks/v6/github"
 	log "github.com/sirupsen/logrus"
@@ -39,13 +40,24 @@ func (s *IssueAction) DoAction(event interface{}) error {
 	case github.IssueCommentPayload:
 		body := event.Comment.Body
 		log.Infof("Issue comments: %+v , %+v coming", event.Sender.Login, body)
-		switch body {
-		case "/assignme":
-			s.client.IssueAssignTo(int(event.Issue.Number), event.Sender.Login)
-			s.client.AddLabelToIssue(int(event.Issue.Number), "community-take")
-		case "/help":
-			help := common.HelpMessage()
-			s.client.CreateComment(int(event.Issue.Number), &help)
+		// `r? @[user]` partern.
+		if strings.HasPrefix(body, "r? ") {
+			user := strings.TrimPrefix(body, "r? @")
+			if err := s.client.PullRequestRequestReviewer(int(event.Issue.Number), user); err != nil {
+				return err
+			}
+			msg := "Override the reviewer to " + user
+			s.client.CreateComment(int(event.Issue.Number), &msg)
+		} else {
+			switch body {
+			case "/assignme":
+				s.client.IssueAssignTo(int(event.Issue.Number), event.Sender.Login)
+				s.client.AddLabelToIssue(int(event.Issue.Number), "community-take")
+			case "/help":
+				help := common.HelpMessage()
+				s.client.CreateComment(int(event.Issue.Number), &help)
+			}
+
 		}
 
 	case github.IssuesPayload:

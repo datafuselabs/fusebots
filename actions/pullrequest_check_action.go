@@ -130,6 +130,10 @@ func (s *PullRequestCheckAction) reviewerCheck(payload github.PullRequestPayload
 				return err
 			}
 			if len(reviewers.Users) == 0 {
+				if err = s.client.PullRequestRequestReviewer(int(pr.ID), "BohuTANG"); err != nil {
+					return err
+
+				}
 				if s.cfg.Hints.PRNeedReviewComment != "" {
 					comments := fmt.Sprintf(s.cfg.Hints.PRNeedReviewComment, pr.User.Login)
 					s.client.CreateComment(int(pr.Number), &comments)
