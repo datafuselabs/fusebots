@@ -41,12 +41,12 @@ func (s *IssueAction) DoAction(event interface{}) error {
 		body := event.Comment.Body
 		log.Infof("Issue comments: %+v , %+v coming", event.Sender.Login, body)
 		// `r? @[user]` partern.
-		if strings.HasPrefix(body, "r? ") {
-			user := strings.TrimPrefix(body, "r? @")
+		if strings.HasPrefix(body, "/review ") {
+			user := strings.TrimPrefix(body, "/review @")
 			if err := s.client.PullRequestRequestReviewer(int(event.Issue.Number), user); err != nil {
 				return err
 			}
-			msg := "Override the reviewer to " + user
+			msg := "Take the reviewer to " + user
 			s.client.CreateComment(int(event.Issue.Number), &msg)
 		} else {
 			switch body {
