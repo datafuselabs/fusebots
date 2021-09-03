@@ -99,6 +99,17 @@ func (s *Client) ListCheckRunsForRef(ref string) (*github.ListCheckRunsResults, 
 	return checkRuns, err
 }
 
+func (s *Client) PullRequestReview(number int, envent string) error {
+	ctx, timeout := context.WithTimeout(*s.ctx, 10*time.Second)
+	defer timeout()
+
+	opts := github.PullRequestReviewRequest{
+		Event: &envent,
+	}
+	_, _, err := s.client.PullRequests.CreateReview(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, number, &opts)
+	return err
+}
+
 func (s *Client) PullRequestRequestReviewer(number int, reviewer string) error {
 	ctx, timeout := context.WithTimeout(*s.ctx, 10*time.Second)
 	defer timeout()

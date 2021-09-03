@@ -40,22 +40,29 @@ func (s *IssueAction) DoAction(event interface{}) error {
 	case github.IssueCommentPayload:
 		body := event.Comment.Body
 		log.Infof("Issue comments: %+v , %+v coming", event.Sender.Login, body)
-		// `r? @[user]` partern.
+		// `/review @username` partern.
 		if strings.HasPrefix(body, "/review ") {
-			user := strings.TrimPrefix(body, "/review @")
+			user := strings.TrimSpace(strings.TrimPrefix(body, "/review @"))
 			if err := s.client.PullRequestRequestReviewer(int(event.Issue.Number), user); err != nil {
 				return err
 			}
 			msg := "Take the reviewer to " + user
 			s.client.CreateComment(int(event.Issue.Number), &msg)
 		} else {
-			switch body {
+			switch strings.ToLower(body) {
 			case "/assignme":
 				s.client.IssueAssignTo(int(event.Issue.Number), event.Sender.Login)
 				s.client.AddLabelToIssue(int(event.Issue.Number), "community-take")
 			case "/help":
 				help := common.HelpMessage()
 				s.client.CreateComment(int(event.Issue.Number), &help)
+			case "/approve", "lgtm":
+				if err := s.client.PullRequestReview(int(event.Issue.Number), "APPROVE"); err != nil {
+					return err
+				}
+
+				msg := "Approved! Thank you for the PR"
+				s.client.CreateComment(int(event.Issue.Number), &msg)
 			}
 
 		}
