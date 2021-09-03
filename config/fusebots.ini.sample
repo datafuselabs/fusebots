@@ -13,7 +13,7 @@ merge_check_cron = "@every 10s"
 
 [hint]
 issue_first_time_comment = "Hello @%v, 🎉 Thank you for opening an issue! 🎉 <br /> One of the maintainers of the project will respond as soon as possible. Seeing that you are new here, please familiarize yourself with our [Roadmap](https://github.com/datafuselabs/datafuse/issues/746) and [contributing to datafuse](https://github.com/datafuselabs/datafuse/blob/master/website/datafuse/docs/development/contributing.md)"
-pr_need_review_comment = "Hello @%v, 🎉 Thank you for opening the pull request! 🎉 <br />Your pull request state is not in Draft, Please Comments `r? @[username]` to take a reviwer :rocket:"
+pr_need_review_comment = "Hello @%v, 🎉 Thank you for opening the pull request! 🎉 <br />Your pull request state is not in Draft, Please Comments `/review @[username]` to take a reviwer :rocket:"
 
 [pr_description_action]
 title = "Description check"
