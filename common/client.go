@@ -49,6 +49,25 @@ func (s *Client) CreateComment(number int, comment *string) error {
 	return err
 }
 
+func (s *Client) GetLastComment(number int) (*github.IssueComment, error) {
+	ctx, timeout := context.WithTimeout(*s.ctx, 10*time.Second)
+	defer timeout()
+
+	var sort string = "created"
+	var direction string = "desc"
+	opts := github.IssueListCommentsOptions{
+		Sort:      &sort,
+		Direction: &direction,
+	}
+	list, _, err := s.client.Issues.ListComments(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, number, &opts)
+	if len(list) > 0 {
+		return list[0], err
+	} else {
+		return nil, err
+	}
+
+}
+
 func (s *Client) PullRequestMerge(number int, comment string) error {
 	ctx, timeout := context.WithTimeout(*s.ctx, 10*time.Second)
 	defer timeout()

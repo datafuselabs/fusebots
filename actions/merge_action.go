@@ -31,6 +31,7 @@ func NewAutoMergeAction(cfg *config.Config) *AutoMergeAction {
 }
 
 func (s *AutoMergeAction) autoMergeCron() {
+	comments := fmt.Sprintf("CI Passed\nReviewer Approved\nLet's Merge")
 	prs, err := s.client.PullRequestList()
 	if err != nil {
 		log.Errorf("List open pull requests error:%v", err)
@@ -42,14 +43,24 @@ func (s *AutoMergeAction) autoMergeCron() {
 		}
 
 		if shouldMerge {
-			comments := fmt.Sprintf("CI Passed\nReviewer Approved\nLet's Merge")
-			s.client.CreateComment(pr.GetNumber(), &comments)
-
-			if err := s.client.PullRequestMerge(pr.GetNumber(), ""); err != nil {
-				log.Errorf("Do merge error:%+v", err)
+			// Check is approved.
+			last_comment, err := s.client.GetLastComment(pr.GetNumber())
+			if err != nil {
+				log.Errorf("Get last comments error:%+v", err)
 				continue
 			}
-			log.Infof("Merge %v succuess", pr.GetNumber())
+
+			if last_comment != nil && (*last_comment.Body == comments) {
+				log.Warn("PR:%+v has proved", pr.GetNumber())
+				continue
+			} else {
+				s.client.CreateComment(pr.GetNumber(), &comments)
+				if err := s.client.PullRequestMerge(pr.GetNumber(), ""); err != nil {
+					log.Errorf("Do merge error:%+v", err)
+					continue
+				}
+				log.Infof("Merge %v succuess", pr.GetNumber())
+			}
 		}
 	}
 }
