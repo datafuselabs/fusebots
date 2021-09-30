@@ -1,25 +1,26 @@
 [github]
 # Github Token
-token = "can't tell"
+token =  "can't tell"
 
 # Github Token
-secret = "can't tell"
+secret =  "can't tell"
+
 owner = "datafuselabs"
-name = "datafuse"
+name = "databend"
 
 [schedule]
 nightly_release_cron = "@daily"
-merge_check_cron = "@every 10s"
 
 [hint]
-issue_first_time_comment = "Hello @%v, 🎉 Thank you for opening an issue! 🎉 <br /> One of the maintainers of the project will respond as soon as possible. Seeing that you are new here, please familiarize yourself with our [Roadmap](https://github.com/datafuselabs/datafuse/issues/746) and [contributing to datafuse](https://github.com/datafuselabs/datafuse/blob/master/website/datafuse/docs/development/contributing.md)"
-pr_need_review_comment = "Hello @%v, 🎉 Thank you for opening the pull request! 🎉 <br />Your pull request state is not in Draft, Please Comments `/review @[username]` to take a reviwer :rocket:"
+issue_first_time_comment = "Hello @%v, 🎉 Thank you for opening an issue! 🎉 <br /> One of the maintainers of the project will respond as soon as possible. Seeing that you are new here, please familiarize yourself with our [Roadmap](https://togithub.com/datafuselabs/databend/issues/746) and [contributing to databend](https://github.com/datafuselabs/databend/blob/master/website/databend/docs/development/contributing.md)"
+pr_need_review_comment = "Hello @%v, 🎉 Thank you for opening the pull request! 🎉 <br />Your pull request state is not in Draft, Please Comments `/review @[username]` to take a reviwer :rocket"
+
 
 [pr_description_action]
 title = "Description check"
 pending_desc = "Checking"
 error_desc = "Description error"
 success_desc = "Description OK"
-target_url = "https://github.com/datafuselabs/datafuse/blob/master/.github/PULL_REQUEST_TEMPLATE.md"
-checks = \bI hereby agree to the terms of the CLA available at: https://datafuse.rs/policies/cla/?\b, \bChangelog?\b, \bSummary?\b
+target_url = "https://github.com/datafuselabs/databend/blob/master/.github/PULL_REQUEST_TEMPLATE.md"
+checks = \bI hereby agree to the terms of the CLA available at: https://databend.rs/policies/cla/?\b, \bChangelog?\b, \bSummary?\b
 allowlist = datafuse-bot,dependabot*
