@@ -53,7 +53,7 @@ func (s *Client) GetLastComment(number int) (*github.IssueComment, error) {
 	ctx, timeout := context.WithTimeout(*s.ctx, 10*time.Second)
 	defer timeout()
 
-	var sort string = "created"
+	var sort string = "created_at"
 	var direction string = "desc"
 	opts := github.IssueListCommentsOptions{
 		Sort:      &sort,

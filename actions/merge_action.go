@@ -40,6 +40,7 @@ func (s *AutoMergeAction) autoMergeCron() {
 		shouldMerge, err := s.shouldMergePR(pr)
 		if err != nil {
 			log.Errorf("Check should merge pr error:%v", err)
+			continue
 		}
 
 		if shouldMerge {
@@ -49,6 +50,7 @@ func (s *AutoMergeAction) autoMergeCron() {
 				log.Errorf("Get last comments error:%+v", err)
 				continue
 			}
+			log.Infof("last comments: %v", last_comment)
 
 			if last_comment != nil && (*last_comment.Body == comments) {
 				log.Warn("PR:%+v has proved", pr.GetNumber())
@@ -80,6 +82,14 @@ func (s *AutoMergeAction) shouldMergePR(pr *github.PullRequest) (bool, error) {
 		"success": true,
 		"neutral": true,
 		"skipped": true,
+	}
+
+	if pr.GetMerged() {
+		return false, nil
+	}
+
+	if !pr.GetMergeable() {
+		return false, nil
 	}
 
 	// Draft.
