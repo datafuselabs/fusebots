@@ -54,14 +54,14 @@ func (s *Client) GetLastComment(number int) (*github.IssueComment, error) {
 	defer timeout()
 
 	var sort string = "created_at"
-	var direction string = "asc"
+	var direction string = "desc"
 	opts := github.IssueListCommentsOptions{
 		Sort:      &sort,
 		Direction: &direction,
 	}
 	list, _, err := s.client.Issues.ListComments(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, number, &opts)
 	if len(list) > 0 {
-		return list[0], err
+		return list[len(list)-1], err
 	} else {
 		return nil, err
 	}
