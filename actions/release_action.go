@@ -19,7 +19,6 @@ import (
 )
 
 const (
-	baseBranch  = "master"
 	listPerPage = 10
 )
 
@@ -73,10 +72,12 @@ func (s *ReleaseAction) releaseHandle(typ string, preRelease bool) error {
 	}
 	log.Infof("Latest tag:%v, new tag:%v, type:%v", currentTag, newTagName, typ)
 
-	prs, err := s.client.GetMergedPullRequestsAfter(baseBranch, after)
+	prs, err := s.client.GetMergedPullRequestsAfter(s.cfg.Github.BaseBranch, after)
 	if err != nil {
 		return err
 	}
+
+	log.Infof("prs:%v", len(prs))
 	if len(prs) > 0 {
 		var labelPr = make(map[string][]*github.PullRequest)
 		for _, pr := range prs {

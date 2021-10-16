@@ -20,6 +20,7 @@ type GithubConfig struct {
 	GithubSecret string `ini:"secret"`
 	RepoOwner    string `ini:"owner"`
 	RepoName     string `ini:"name"`
+	BaseBranch   string `ini:"base_branch"`
 }
 
 type PRDescriptionActionConfig struct {
@@ -52,6 +53,9 @@ func LoadConfig(file string) (*Config, error) {
 	cfg.Github = new(GithubConfig)
 	if err := load.Section("github").MapTo(cfg.Github); err != nil {
 		log.Fatalf("Can not load gihutb section:%+v", err)
+	}
+	if cfg.Github.BaseBranch == "" {
+		cfg.Github.BaseBranch = "main"
 	}
 
 	// PR desc action.
