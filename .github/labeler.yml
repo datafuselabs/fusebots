@@ -47,6 +47,10 @@ labels:
       - '\bDocumentation?\b'
       - '\bWebsite?\b'
     exclude: []
+  'pr-need-doc':
+    include:
+      - '\bNeed Documentation?\b'
+    exclude: []
   'pr-other':
     include:
       - '\bOther?\b'
