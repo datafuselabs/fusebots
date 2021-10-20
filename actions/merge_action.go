@@ -54,15 +54,15 @@ func (s *AutoMergeAction) autoMergeCron() {
 
 			if last_comment != nil && (*last_comment.Body == comments) {
 				log.Warn("PR:%+v has proved", pr.GetNumber())
-				continue
 			} else {
 				s.client.CreateComment(pr.GetNumber(), &comments)
-				if err := s.client.PullRequestMerge(pr.GetNumber(), ""); err != nil {
-					log.Errorf("Do merge error:%+v", err)
-					continue
-				}
-				log.Infof("Merge %v succuess", pr.GetNumber())
 			}
+
+			log.Warn("PR:%+v try to merge", pr.GetNumber())
+			if err := s.client.PullRequestMerge(pr.GetNumber(), ""); err != nil {
+				log.Errorf("Do merge error:%+v", err)
+			}
+			log.Warn("PR:%+v merge send", pr.GetNumber())
 		}
 	}
 }
