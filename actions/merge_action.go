@@ -132,6 +132,14 @@ func (s *AutoMergeAction) shouldMergePR(pr *github.PullRequest) (int, error) {
 		}
 	}
 
+	if approveCount == 2 {
+		for _, l := range labels {
+			if *l.Name == "need-review" {
+				s.client.RemoveLabelFromIssue(pr.GetNumber(), *l.Name)
+			}
+		}
+	}
+
 	// if bot approve twice, check label
 	if approveCount == 1 {
 		for _, l := range labels {

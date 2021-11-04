@@ -109,6 +109,8 @@ func (s *IssueAction) prMergeStateChange(number int) error {
 			{
 				newLabels = append(newLabels, "lgtm2")
 			}
+		case "lgtm2": // no need change, save one network request:)
+			return nil
 		default:
 			newLabels = append(newLabels, *l.Name)
 		}
