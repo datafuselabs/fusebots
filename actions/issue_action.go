@@ -109,10 +109,6 @@ func (s *IssueAction) prMergeStateChange(number int) error {
 			{
 				newLabels = append(newLabels, "lgtm2")
 			}
-		case "lgtm2":
-			{
-				newLabels = append(newLabels, "can-merge")
-			}
 		default:
 			newLabels = append(newLabels, *l.Name)
 		}
