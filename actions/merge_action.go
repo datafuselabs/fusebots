@@ -35,6 +35,7 @@ func (s *AutoMergeAction) autoMergeCron() {
 	if err != nil {
 		log.Errorf("List open pull requests error:%v", err)
 	}
+
 	for _, pr := range prs {
 		approveCount, err := s.shouldMergePR(pr)
 		if err != nil {
@@ -43,26 +44,23 @@ func (s *AutoMergeAction) autoMergeCron() {
 		}
 
 		switch approveCount {
-		case -1:
-			continue
-		case 0:
-			comments := fmt.Sprint("Wait for reviewers approval")
-			s.client.CreateComment(pr.GetNumber(), &comments)
+		case -1, 0:
+
 		case 1:
 			comments := fmt.Sprint("Wait for another reviewer approval")
 			s.client.CreateComment(pr.GetNumber(), &comments)
 		default:
-			comments := fmt.Sprintf("CI Passed\nReviewers Approved\nLet's Merge")
+			comments := fmt.Sprintf("CI Passed\nReviewers Approved\nLet's Merge\nThank you for the PR @%s", pr.User.Login)
 
 			// Check is approved.
-			last_comment, err := s.client.GetLastComment(pr.GetNumber())
+			lastComment, err := s.client.GetLastComment(pr.GetNumber())
 			if err != nil {
 				log.Errorf("Get last comments error:%+v", err)
 				continue
 			}
-			log.Infof("%v last comments: %v", pr.GetNumber(), last_comment)
+			log.Infof("%v last comments: %v", pr.GetNumber(), lastComment)
 
-			if last_comment != nil && (*last_comment.Body == comments) {
+			if lastComment != nil && (*lastComment.Body == comments) {
 				log.Warn("PR:%+v has proved", pr.GetNumber())
 			} else {
 				s.client.CreateComment(pr.GetNumber(), &comments)
@@ -122,10 +120,24 @@ func (s *AutoMergeAction) shouldMergePR(pr *github.PullRequest) (int, error) {
 		return -1, err
 	}
 
+	labels, err := s.client.ListLabelsForIssue(pr.GetNumber())
+	if err != nil {
+		return -1, err
+	}
+
 	approveCount := 0
 	for _, review := range reviews {
 		if review.GetState() == "APPROVED" {
 			approveCount++
+		}
+	}
+
+	// if bot approve twice, check label
+	if approveCount == 1 {
+		for _, l := range labels {
+			if *l.Name == "lgtm2" {
+				approveCount = 2
+			}
 		}
 	}
 
