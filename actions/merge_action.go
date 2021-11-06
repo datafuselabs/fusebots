@@ -43,15 +43,24 @@ func (s *AutoMergeAction) autoMergeCron() {
 			continue
 		}
 
+		approve_comments := "Wait for another reviewer approval"
+		ci_passed_comments := fmt.Sprintf("CI Passed\nReviewers Approved\nLet's Merge\nThank you for the PR @%s", pr.User.Login)
 		switch approveCount {
 		case -1, 0:
 
 		case 1:
-			comments := fmt.Sprint("Wait for another reviewer approval")
-			s.client.CreateComment(pr.GetNumber(), &comments)
+			// Check has approved comment.
+			lastComment, err := s.client.GetLastComment(pr.GetNumber())
+			if err != nil {
+				log.Errorf("Get last comments error:%+v", err)
+				continue
+			}
+			if lastComment != nil && (*lastComment.Body == approve_comments) {
+				log.Warn("PR:%+v has 1 proved", pr.GetNumber())
+			} else {
+				s.client.CreateComment(pr.GetNumber(), &approve_comments)
+			}
 		default:
-			comments := fmt.Sprintf("CI Passed\nReviewers Approved\nLet's Merge\nThank you for the PR @%s", pr.User.Login)
-
 			// Check is approved.
 			lastComment, err := s.client.GetLastComment(pr.GetNumber())
 			if err != nil {
@@ -60,10 +69,10 @@ func (s *AutoMergeAction) autoMergeCron() {
 			}
 			log.Infof("%v last comments: %v", pr.GetNumber(), lastComment)
 
-			if lastComment != nil && (*lastComment.Body == comments) {
+			if lastComment != nil && (*lastComment.Body == ci_passed_comments) {
 				log.Warn("PR:%+v has proved", pr.GetNumber())
 			} else {
-				s.client.CreateComment(pr.GetNumber(), &comments)
+				s.client.CreateComment(pr.GetNumber(), &ci_passed_comments)
 			}
 
 			log.Warn("PR:%+v try to merge", pr.GetNumber())
