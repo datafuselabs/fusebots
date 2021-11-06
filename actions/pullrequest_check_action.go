@@ -53,6 +53,10 @@ func (s *PullRequestCheckAction) DoAction(event interface{}) error {
 		log.Infof("Pull request check: %+v coming", event.Number)
 		user := event.PullRequest.User.Login
 
+		if err := s.client.AddLabelToIssue(int(event.Number), "need-review"); err != nil {
+			return err
+		}
+
 		// If user in allow list, skip check.
 		if s.allowList(user) {
 			return nil

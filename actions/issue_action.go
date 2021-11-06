@@ -61,8 +61,11 @@ func (s *IssueAction) DoAction(event interface{}) error {
 				if err := s.client.PullRequestReview(int(event.Issue.Number), "APPROVE"); err != nil {
 					return err
 				}
+				if err := s.prMergeStateChange(int(event.Issue.Number)); err != nil {
+					return err
+				}
 
-				msg := "Approved! Thank you for the PR @" + event.Issue.User.Login
+				msg := fmt.Sprintf("Approved by %s!", event.Comment.User.Login)
 				s.client.CreateComment(int(event.Issue.Number), &msg)
 
 			}
@@ -88,4 +91,30 @@ func (s *IssueAction) DoAction(event interface{}) error {
 
 	}
 	return nil
+}
+
+func (s *IssueAction) prMergeStateChange(number int) error {
+	labels, err := s.client.ListLabelsForIssue(number)
+	if err != nil {
+		return err
+	}
+	newLabels := make([]string, len(labels))
+	for _, l := range labels {
+		switch *l.Name {
+		case "need-review":
+			{
+				newLabels = append(newLabels, "lgtm1")
+			}
+		case "lgtm1":
+			{
+				newLabels = append(newLabels, "lgtm2")
+			}
+		case "lgtm2": // no need change, save one network request:)
+			return nil
+		default:
+			newLabels = append(newLabels, *l.Name)
+		}
+	}
+
+	return s.client.ReplaceLabelsForIssue(number, newLabels...)
 }

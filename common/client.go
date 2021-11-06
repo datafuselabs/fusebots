@@ -118,12 +118,12 @@ func (s *Client) ListCheckRunsForRef(ref string) (*github.ListCheckRunsResults, 
 	return checkRuns, err
 }
 
-func (s *Client) PullRequestReview(number int, envent string) error {
+func (s *Client) PullRequestReview(number int, event string) error {
 	ctx, timeout := context.WithTimeout(*s.ctx, 10*time.Second)
 	defer timeout()
 
 	opts := github.PullRequestReviewRequest{
-		Event: &envent,
+		Event: &event,
 	}
 	_, _, err := s.client.PullRequests.CreateReview(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, number, &opts)
 	return err
@@ -249,6 +249,43 @@ func (s *Client) AddLabelToIssue(number int, label string) error {
 	defer timeout()
 
 	_, _, err := s.client.Issues.AddLabelsToIssue(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, number, []string{label})
+	return err
+}
+
+func (s *Client) ListLabelsForIssue(number int) ([]*github.Label, error) {
+	ctx, timeout := context.WithTimeout(*s.ctx, 10*time.Second)
+	defer timeout()
+
+	labels, _, err := s.client.Issues.ListLabelsByIssue(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, number, nil)
+	return labels, err
+}
+
+func (s *Client) CheckLabelExistsForIssue(number int, label string) (bool, error) {
+	labels, err := s.ListLabelsForIssue(number)
+	if err != nil {
+		return false, err
+	}
+	for _, l := range labels {
+		if label == *l.Name {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func (s *Client) RemoveLabelFromIssue(number int, label string) error {
+	ctx, timeout := context.WithTimeout(*s.ctx, 10*time.Second)
+	defer timeout()
+
+	_, err := s.client.Issues.RemoveLabelForIssue(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, number, label)
+	return err
+}
+
+func (s *Client) ReplaceLabelsForIssue(number int, labels ...string) error {
+	ctx, timeout := context.WithTimeout(*s.ctx, 10*time.Second)
+	defer timeout()
+
+	_, _, err := s.client.Issues.ReplaceLabelsForIssue(ctx, s.cfg.Github.RepoOwner, s.cfg.Github.RepoName, number, labels)
 	return err
 }
 
