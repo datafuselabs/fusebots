@@ -61,7 +61,11 @@ func (s *IssueAction) DoAction(event interface{}) error {
 				if err := s.client.PullRequestReview(int(event.Issue.Number), "APPROVE"); err != nil {
 					return err
 				}
-				if err := s.prMergeStateChange(int(event.Issue.Number)); err != nil {
+				labels := make([]string, len(event.Issue.Labels))
+				for _, l := range event.Issue.Labels {
+					labels = append(labels, l.Name)
+				}
+				if err := s.prMergeStateChange(int(event.Issue.Number), labels); err != nil {
 					return err
 				}
 
@@ -93,14 +97,10 @@ func (s *IssueAction) DoAction(event interface{}) error {
 	return nil
 }
 
-func (s *IssueAction) prMergeStateChange(number int) error {
-	labels, err := s.client.ListLabelsForIssue(number)
-	if err != nil {
-		return err
-	}
+func (s *IssueAction) prMergeStateChange(number int, labels []string) error {
 	newLabels := make([]string, len(labels))
 	for _, l := range labels {
-		switch *l.Name {
+		switch l {
 		case "need-review":
 			{
 				newLabels = append(newLabels, "lgtm1")
@@ -109,12 +109,12 @@ func (s *IssueAction) prMergeStateChange(number int) error {
 			{
 				newLabels = append(newLabels, "lgtm2")
 			}
-		case "lgtm2": // no need change, save one network request:)
+		case "lgtm2": // no need to change
 			return nil
 		default:
-			newLabels = append(newLabels, *l.Name)
+			newLabels = append(newLabels, l)
 		}
 	}
 
-	return s.client.ReplaceLabelsForIssue(number, newLabels...)
+	return s.client.ReplaceLabelsForIssue(number, newLabels)
 }

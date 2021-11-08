@@ -281,7 +281,7 @@ func (s *Client) RemoveLabelFromIssue(number int, label string) error {
 	return err
 }
 
-func (s *Client) ReplaceLabelsForIssue(number int, labels ...string) error {
+func (s *Client) ReplaceLabelsForIssue(number int, labels []string) error {
 	ctx, timeout := context.WithTimeout(*s.ctx, 10*time.Second)
 	defer timeout()
 
