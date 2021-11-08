@@ -44,7 +44,7 @@ func (s *AutoMergeAction) autoMergeCron() {
 		}
 
 		approve_comments := "Wait for another reviewer approval"
-		ci_passed_comments := fmt.Sprintf("CI Passed\nReviewers Approved\nLet's Merge\nThank you for the PR @%s", pr.User.Login)
+		ci_passed_comments := fmt.Sprintf("CI Passed\nReviewers Approved\nLet's Merge\nThank you for the PR @%s", *pr.User.Login)
 		switch approveCount {
 		case -1, 0:
 
