@@ -41,9 +41,17 @@ func (s *IssueAction) DoAction(event interface{}) error {
 		body := event.Comment.Body
 		log.Infof("Issue comments: %+v , %+v coming", event.Sender.Login, body)
 		switch body := strings.ToLower(body); {
-		case strings.HasPrefix(body, "/assignme"):
+		case strings.HasPrefix(body, "/assign"):
 			{
-				s.client.IssueAssignTo(int(event.Issue.Number), event.Sender.Login)
+				var user string
+				if body == "/assign" || body == "/assignme" {
+					user = event.Sender.Login
+				} else {
+					user = strings.TrimSpace(strings.TrimPrefix(body, "/assign @"))
+				}
+				if err := s.client.IssueAssignTo(int(event.Issue.Number), user); err != nil {
+					return err
+				}
 				s.client.AddLabelToIssue(int(event.Issue.Number), "community-take")
 			}
 		case strings.HasPrefix(body, "/review "):

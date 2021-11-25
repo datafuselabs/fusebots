@@ -67,7 +67,7 @@ func main() {
 		payload, err := hook.Parse(r, github.ReleaseEvent, github.PullRequestEvent, github.IssueCommentEvent, github.IssuesEvent)
 		if err != nil {
 			if err == github.ErrEventNotFound {
-				log.Errorf("Unhanle gihutb event: %v", err)
+				log.Errorf("Unhandle github event: %v", err)
 			}
 		}
 
