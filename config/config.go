@@ -33,10 +33,15 @@ type PRDescriptionActionConfig struct {
 	AllowList   []string `ini:"allowlist"`
 }
 
+type DisablesConfig struct {
+	DisableAutoMerge bool `ini:"disable_auto_merge"`
+}
+
 type Config struct {
 	Github              *GithubConfig
 	PRDescriptionAction *PRDescriptionActionConfig
 	Hints               *HintConfig
+	Disables            *DisablesConfig
 	NightReleaseCron    string
 	MergeCheckCron      string
 	ApprovedRule        string
@@ -87,6 +92,13 @@ func LoadConfig(file string) (*Config, error) {
 		log.Fatalf("Can not load hint section:%+v", err)
 	}
 	log.Printf("Hint action:%+v", cfg.Hints)
+
+	// Disables.
+	cfg.Disables = new(DisablesConfig)
+	if err := load.Section("disables").MapTo(cfg.Disables); err != nil {
+		log.Fatalf("Can not load disables section:%+v", err)
+	}
+	log.Printf("Disables conf:%+v", cfg.Disables)
 
 	return cfg, nil
 }

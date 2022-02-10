@@ -53,12 +53,18 @@ func main() {
 	// Actions.
 	labelAction := actions.NewLabelerAction(cfg)
 	labelAction.Start()
+
 	releaseAction := actions.NewReleaseAction(cfg)
 	releaseAction.Start()
+
 	autoMergeAction := actions.NewAutoMergeAction(cfg)
-	autoMergeAction.Start()
+	if !cfg.Disables.DisableAutoMerge {
+		autoMergeAction.Start()
+	}
+
 	issueAction := actions.NewIssueAction(cfg)
 	issueAction.Start()
+
 	prCheckAction := actions.NewPullRequestCheckAction(cfg)
 	prCheckAction.Start()
 
@@ -86,5 +92,7 @@ func main() {
 	http.ListenAndServe(":3000", nil)
 	labelAction.Stop()
 	releaseAction.Stop()
-	autoMergeAction.Stop()
+	if !cfg.Disables.DisableAutoMerge {
+		autoMergeAction.Stop()
+	}
 }
