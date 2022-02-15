@@ -52,7 +52,9 @@ func main() {
 
 	// Actions.
 	labelAction := actions.NewLabelerAction(cfg)
-	labelAction.Start()
+	if !cfg.Disables.DisableLabel {
+		labelAction.Start()
+	}
 
 	releaseAction := actions.NewReleaseAction(cfg)
 	releaseAction.Start()
@@ -90,7 +92,9 @@ func main() {
 	})
 
 	http.ListenAndServe(":3000", nil)
-	labelAction.Stop()
+	if !cfg.Disables.DisableLabel {
+		labelAction.Stop()
+	}
 	releaseAction.Stop()
 	if !cfg.Disables.DisableAutoMerge {
 		autoMergeAction.Stop()

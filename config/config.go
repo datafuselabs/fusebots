@@ -35,6 +35,7 @@ type PRDescriptionActionConfig struct {
 
 type DisablesConfig struct {
 	DisableAutoMerge bool `ini:"disable_auto_merge"`
+	DisableLabel     bool `ini:"disable_label"`
 }
 
 type Config struct {
