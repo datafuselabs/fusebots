@@ -26,3 +26,5 @@ categories:
 
 excludes:
   - 'pr-not-for-changelog'
+  - 'need-review'
+  
