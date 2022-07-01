@@ -67,9 +67,6 @@ func main() {
 	issueAction := actions.NewIssueAction(cfg)
 	issueAction.Start()
 
-	prCheckAction := actions.NewPullRequestCheckAction(cfg)
-	prCheckAction.Start()
-
 	hook, _ := github.New(github.Options.Secret(cfg.Github.GithubSecret))
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		payload, err := hook.Parse(r, github.ReleaseEvent, github.PullRequestEvent, github.IssueCommentEvent, github.IssuesEvent)
@@ -85,9 +82,6 @@ func main() {
 
 		if issueAction.DoAction(payload) != nil {
 			log.Errorf("Issue error: %v", err)
-		}
-		if prCheckAction.DoAction(payload) != nil {
-			log.Errorf("PullRequest check error: %v", err)
 		}
 	})
 
